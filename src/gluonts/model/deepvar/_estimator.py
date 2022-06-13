@@ -38,7 +38,7 @@ from gluonts.mx.model.estimator import GluonEstimator
 from gluonts.mx.model.predictor import RepresentableBlockPredictor
 from gluonts.mx.trainer import Trainer
 from gluonts.mx.util import copy_parameters, get_hybrid_forward_input_names
-from gluonts.support.util import maybe_len
+from gluonts.itertools import maybe_len
 from gluonts.time_feature import TimeFeature, norm_freq_str
 from gluonts.transform import (
     AddObservedValuesIndicator,
@@ -132,7 +132,7 @@ def get_lags_for_frequency(
         lags = [[1]]
 
     # use less lags
-    output_lags = list([int(lag) for sub_list in lags for lag in sub_list])
+    output_lags = list(int(lag) for sub_list in lags for lag in sub_list)
     output_lags = sorted(list(set(output_lags)))
     return output_lags[:num_lags]
 
@@ -399,7 +399,9 @@ class DeepVAREstimator(GluonEstimator):
             else RenameFields(
                 {
                     f"past_{FieldName.TARGET}": f"past_{FieldName.TARGET}_cdf",
-                    f"future_{FieldName.TARGET}": f"future_{FieldName.TARGET}_cdf",
+                    f"future_{FieldName.TARGET}": (
+                        f"future_{FieldName.TARGET}_cdf"
+                    ),
                 }
             )
         )

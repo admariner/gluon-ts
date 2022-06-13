@@ -21,15 +21,23 @@ from typing import (
     NamedTuple,
     Tuple,
     TypeVar,
+    Optional,
 )
 
+from gluonts.dataset.field_names import FieldName
 import pandas as pd
 
 T = TypeVar("T")
 
 
+def forecast_start(entry):
+    return entry[FieldName.START] + len(entry[FieldName.TARGET])
+
+
 class MPWorkerInfo:
-    """Contains the current worker information."""
+    """
+    Contains the current worker information.
+    """
 
     worker_process = False
     num_workers = None
@@ -105,10 +113,10 @@ def find_files(
     return sorted(chosen)
 
 
-def to_pandas(instance: dict, freq: str = None) -> pd.Series:
+def to_pandas(instance: dict, freq: Optional[str] = None) -> pd.Series:
     """
-    Transform a dictionary into a pandas.Series object, using its
-    "start" and "target" fields.
+    Transform a dictionary into a pandas.Series object, using its "start" and
+    "target" fields.
 
     Parameters
     ----------
@@ -122,21 +130,12 @@ def to_pandas(instance: dict, freq: str = None) -> pd.Series:
     pandas.Series
         Pandas time series object.
     """
-    target = instance["target"]
-    start = instance["start"]
+    target = instance[FieldName.TARGET]
+    start = instance[FieldName.START]
     if not freq:
         freq = start.freqstr
-    index = pd.date_range(start=start, periods=len(target), freq=freq)
-    return pd.Series(target, index=index)
 
-
-def dct_reduce(reduce_fn, dcts):
-    """Similar to `reduce`, but applies reduce_fn to fields of dicts with the
-    same name.
-
-    >>> dct_reduce(sum, [{"a": 1}, {"a": 2}])
-    {'a': 3}
-    """
-    keys = dcts[0].keys()
-
-    return {key: reduce_fn([item[key] for item in dcts]) for key in keys}
+    return pd.Series(
+        target,
+        index=pd.period_range(start=start, periods=len(target), freq=freq),
+    )

@@ -12,12 +12,12 @@
 # permissions and limitations under the License.
 
 from functools import partial
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import numpy as np
 from mxnet.gluon import HybridBlock
 
-from gluonts.core.component import DType, validated
+from gluonts.core.component import validated
 from gluonts.dataset.common import Dataset
 from gluonts.dataset.field_names import FieldName
 from gluonts.dataset.loader import (
@@ -33,7 +33,7 @@ from gluonts.mx.model.estimator import GluonEstimator
 from gluonts.mx.model.predictor import RepresentableBlockPredictor
 from gluonts.mx.trainer import Trainer
 from gluonts.mx.util import copy_parameters, get_hybrid_forward_input_names
-from gluonts.support.util import maybe_len
+from gluonts.itertools import maybe_len
 from gluonts.time_feature import TimeFeature, time_features_from_frequency_str
 from gluonts.transform import (
     AddTimeFeatures,
@@ -79,26 +79,33 @@ class GaussianProcessEstimator(GluonEstimator):
     trainer
         Trainer instance to be used for model training (default: Trainer()).
     context_length
-        Training length (default: None, in which case context_length = prediction_length).
+        Training length (default: None, in which case context_length =
+        prediction_length).
     kernel_output
         KernelOutput instance to determine which kernel subclass to be
         instantiated (default: RBFKernelOutput()).
     params_scaling
-        Determines whether or not to scale the model parameters (default: True).
+        Determines whether or not to scale the model parameters
+        (default: True).
     float_type
-        Determines whether to use single or double precision (default: np.float64).
+        Determines whether to use single or double precision
+        (default: np.float64).
     max_iter_jitter
-        Maximum number of iterations for jitter to iteratively make the matrix positive definite (default: 10).
+        Maximum number of iterations for jitter to iteratively make the matrix
+        positive definite (default: 10).
     jitter_method
-        Iteratively jitter method or use eigenvalue decomposition depending on problem size (default: "iter").
+        Iteratively jitter method or use eigenvalue decomposition depending on
+        problem size (default: "iter").
     sample_noise
-        Boolean to determine whether to add :math:`\sigma^2I` to the predictive covariance matrix (default: True).
+        Boolean to determine whether to add :math:`\sigma^2I` to the predictive
+        covariance matrix (default: True).
     time_features
         Time features to use as inputs of the model (default: None, in which
         case these are automatically determined based on the frequency).
     num_parallel_samples
-        Number of evaluation samples per time series to increase parallelism during inference.
-        This is a model optimization that does not affect the accuracy (default: 100).
+        Number of evaluation samples per time series to increase parallelism
+        during inference. This is a model optimization that does not affect the
+        accuracy (default: 100).
     batch_size
         The size of the batches to be used training and prediction.
     """
@@ -113,7 +120,7 @@ class GaussianProcessEstimator(GluonEstimator):
         context_length: Optional[int] = None,
         kernel_output: KernelOutput = RBFKernelOutput(),
         params_scaling: bool = True,
-        dtype: DType = np.float64,
+        dtype: Type = np.float64,
         max_iter_jitter: int = 10,
         jitter_method: str = "iter",
         sample_noise: bool = True,
